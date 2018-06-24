@@ -15,6 +15,15 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // BroadcastReceiverからのインテントかどうか確認
+        if(intent?.getBooleanExtra("onReceive", false) == true) {
+
+            // SimapleAlertDialogインスタンスを生成し、ダイアログ表示
+            val dialog = SimapleAlertDialog()
+            dialog.show(supportFragmentManager, "alert_dialog")
+        }
+
         setContentView(R.layout.activity_main)
 
         setAlarm.setOnClickListener {
@@ -48,7 +57,7 @@ class MainActivity : AppCompatActivity() {
         val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         // アラーム時刻になった時にAndroidシステムから発行されるインテントを作成（インテント先はAlarmBroadcastreceiver）
-        val intent = Intent(this, AlarmBroadcastreceiver::class.java)
+        val intent = Intent(this, AlarmBroadcastReceiver::class.java)
 
         // ブロードキャスト実行のためにはペンディングインテントと呼ばれる特殊なインテントが必要
         val pending = PendingIntent.getBroadcast(this, 0, intent, 0)
@@ -75,7 +84,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun cancelAlarmManager() {
         val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(this, AlarmBroadcastreceiver::class.java)
+        val intent = Intent(this, AlarmBroadcastReceiver::class.java)
         val pending = PendingIntent.getBroadcast(this, 0, intent, 0)
         am.cancel(pending)
     }
