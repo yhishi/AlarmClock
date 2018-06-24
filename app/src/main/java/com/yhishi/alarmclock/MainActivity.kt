@@ -11,7 +11,18 @@ import android.os.Bundle
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SimapleAlertDialog.OnClicklistener {
+    override fun onPositiveClick() {
+        finish()
+    }
+
+    override fun onNegativeClick() {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = System.currentTimeMillis()
+        calendar.add(Calendar.MINUTE, 5)
+        setAlarmManager(calendar)
+        finish()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
