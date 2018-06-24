@@ -27,6 +27,11 @@ class MainActivity : AppCompatActivity() {
             // ブロードキャスト設定
             setAlarmManager(calendar)
         }
+
+        // アラームキャンセル
+        cancelAlerm.setOnClickListener {
+            cancelAlarmManager()
+        }
     }
 
     /**
@@ -61,5 +66,17 @@ class MainActivity : AppCompatActivity() {
                 am.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pending)
             }
         }
+    }
+
+    /**
+     * cancelAlarmManager
+     *
+     * アラームキャンセル
+     */
+    private fun cancelAlarmManager() {
+        val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, AlarmBroadcastreceiver::class.java)
+        val pending = PendingIntent.getBroadcast(this, 0, intent, 0)
+        am.cancel(pending)
     }
 }
