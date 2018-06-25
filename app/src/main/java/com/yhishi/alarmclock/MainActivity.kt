@@ -8,10 +8,30 @@ import android.content.Intent
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.text.format.DateFormat
 import kotlinx.android.synthetic.main.activity_main.*
+import org.jetbrains.anko.toast
+import java.text.ParseException
+import java.text.SimpleDateFormat
 import java.util.*
 
-class MainActivity : AppCompatActivity(), SimapleAlertDialog.OnClicklistener {
+class MainActivity : AppCompatActivity(),
+        SimapleAlertDialog.OnClicklistener,
+        DatePickerFragment.OnDateSelectedListener,
+        TimePickerFragment.OnTimeSelectedListener {
+
+    // 日付選択後の処理
+    override fun onSelected(year: Int, month: Int, date: Int) {
+        val c = Calendar.getInstance()
+        c.set(year, month, date)
+        dateText.text = DateFormat.format("yyyy/MM/dd", c)
+    }
+
+    // 時刻選択後の処理
+    override fun onSelected(hourOfDay: Int, minute: Int) {
+        timetext.text = "%1$02d:%2$02d".format(hourOfDay, minute)
+    }
+
     override fun onPositiveClick() {
         finish()
     }
@@ -38,19 +58,39 @@ class MainActivity : AppCompatActivity(), SimapleAlertDialog.OnClicklistener {
         setContentView(R.layout.activity_main)
 
         setAlarm.setOnClickListener {
-            val calendar = Calendar.getInstance()
+            // ダイアログで入力された日付・時刻をdate型に変換
+            val date = "${dateText.text} ${timetext.text}".toDate()
+            when {
+                date != null -> {
+                    // calendarへの時刻設定
+                    val calendar = Calendar.getInstance()
+                    calendar.time = date
 
-            // calendarへの時刻設定
-            calendar.timeInMillis = System.currentTimeMillis()
-            calendar.add(Calendar.SECOND, 5)
-
-            // ブロードキャスト設定
-            setAlarmManager(calendar)
+                    // ブロードキャスト設定
+                    setAlarmManager(calendar)
+                    toast("アラームをセットしました")
+                }
+                else -> {
+                    toast("日付の形式が正しくありません")
+                }
+            }
         }
 
         // アラームキャンセル
         cancelAlerm.setOnClickListener {
             cancelAlarmManager()
+        }
+
+        dateText.setOnClickListener {
+            // 日付選択ダイアログ表示
+            val dialog = DatePickerFragment()
+            dialog.show(supportFragmentManager, "date_dialog")
+        }
+
+        timetext.setOnClickListener {
+            // 時刻選択ダイアログ表示
+            val dialog = TimePickerFragment()
+            dialog.show(supportFragmentManager, "time_dialog")
         }
     }
 
@@ -98,5 +138,24 @@ class MainActivity : AppCompatActivity(), SimapleAlertDialog.OnClicklistener {
         val intent = Intent(this, AlarmBroadcastReceiver::class.java)
         val pending = PendingIntent.getBroadcast(this, 0, intent, 0)
         am.cancel(pending)
+    }
+
+    // Date型に変換
+    fun String.toDate(pattern: String = "yyyy/MM/dd HH:mm"): Date? {
+        val sdFormat = try {
+            // Dateに変換する文字列形式を指定して、SimpleDateFormatインスタンス生成
+            SimpleDateFormat(pattern)
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+        val date = sdFormat?.let {
+            try {
+                // 文字列フォーマットを渡して、Date型変換
+                it.parse(this)
+            } catch (e: ParseException) {
+                null
+            }
+        }
+        return date
     }
 }
