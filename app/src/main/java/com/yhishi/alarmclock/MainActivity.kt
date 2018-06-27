@@ -9,6 +9,7 @@ import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.text.format.DateFormat
+import android.view.WindowManager.LayoutParams.*
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.toast
 import java.text.ParseException
@@ -49,6 +50,16 @@ class MainActivity : AppCompatActivity(),
 
         // BroadcastReceiverからのインテントかどうか確認
         if(intent?.getBooleanExtra("onReceive", false) == true) {
+
+            // スリープを解除して画面を表示するよう、Windowフラグ設定
+            when {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ->
+                    // FLAG_TURN_SCREEN_ON：システム画面ON  FLAG_SHOW_WHEN_LOCKED：画面ロック時にウィンドウ表示
+                    window.addFlags(FLAG_TURN_SCREEN_ON or FLAG_SHOW_WHEN_LOCKED)
+                else ->
+                    // FLAG_DISMISS_KEYGUARD：キーガード解除
+                    window.addFlags(FLAG_TURN_SCREEN_ON or FLAG_SHOW_WHEN_LOCKED or FLAG_DISMISS_KEYGUARD)
+            }
 
             // SimapleAlertDialogインスタンスを生成し、ダイアログ表示
             val dialog = SimapleAlertDialog()
@@ -141,7 +152,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     // Date型に変換
-    fun String.toDate(pattern: String = "yyyy/MM/dd HH:mm"): Date? {
+    private fun String.toDate(pattern: String = "yyyy/MM/dd HH:mm"): Date? {
         val sdFormat = try {
             // Dateに変換する文字列形式を指定して、SimpleDateFormatインスタンス生成
             SimpleDateFormat(pattern)
